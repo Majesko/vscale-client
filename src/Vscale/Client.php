@@ -2,7 +2,9 @@
 
 namespace Vscale;
 
-use Vscale\Requests\Billing;
+use Vscale\Requests\BillingRequest;
+use Vscale\Requests\ImageRequest;
+use Vscale\Requests\ScaletRequest;
 
 class Client
 {
@@ -15,6 +17,16 @@ class Client
 
     public function billing()
     {
-        return new Billing($this->token);
+        return new BillingRequest($this->token);
+    }
+
+    public function scalets()
+    {
+        return new ScaletRequest($this->token);
+    }
+
+    public function images()
+    {
+        return new ImageRequest($this->token);
     }
 }

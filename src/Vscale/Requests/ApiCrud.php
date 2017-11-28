@@ -2,21 +2,41 @@
 
 namespace Vscale\Requests;
 
+use Vscale\Responses\ResponseFactory;
+
 abstract class ApiCrud extends BaseRequest
 {
+
+    protected $only;
+
     public function index()
     {
-        $response = $this->httpClient->get($this->getRequestPath());
-        $responseData = \GuzzleHttp\json_decode($response->getBody()->getContents());
+        $responseData = $this->makeRequest('GET', $this->getRequestPath());
 
-        return (new \ResponseFactory($this->domain, $responseData))->getResponse();
+        $result = array_map(function($item) {
+            return (new ResponseFactory($this->domain, $item))->getResponse();
+        }, $responseData);
+
+        return $result;
     }
 
     public abstract function create();
 
-    public abstract function show();
+    public function show(int $id)
+    {
+        $responseData = $this->makeRequest('GET', $this->getRequestPath($id));
+
+        return (new ResponseFactory($this->domain, $responseData))->getResponse();
+    }
 
     public abstract function update();
 
     public abstract function delete();
+
+    public function __call($name, $arguments)
+    {
+        if (in_array($name, $this->only)) {
+            $this->$name($arguments);
+        }
+    }
 }

@@ -1,5 +1,14 @@
 <?php
 
+namespace Vscale\Responses;
+
+use Exception;
+use Vscale\Entities\Entity;
+use Vscale\Entities\Domain;
+use Vscale\Entities\Image;
+use Vscale\Entities\Scalet;
+use Vscale\Exceptions\EntityNotExistException;
+
 class ResponseFactory
 {
     private $domain;
@@ -10,15 +19,20 @@ class ResponseFactory
         $this->props = $props;
     }
 
-    public function getResponse()
+    public function getResponse(): Entity
     {
         switch ($this->domain) {
             case 'domain':
                 return new Domain($this->props);
-                break;
+
+            case 'scalets':
+                return new Scalet($this->props);
+
+            case 'images';
+                return new Image($this->props);
 
             default:
-                throw new Exception('Class does not exist');
+                throw new EntityNotExistException();
         }
     }
 }

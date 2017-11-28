@@ -3,6 +3,8 @@
 namespace Vscale\Requests;
 
 use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\ClientException;
+use Vscale\Exceptions\EntityNotExistException;
 
 class BaseRequest
 {
@@ -22,7 +24,7 @@ class BaseRequest
 
     protected function getBaseUri()
     {
-        return $this->base_uri.'/'.$this->api_version;
+        return $this->base_uri.'/'.$this->api_version.'/';
     }
 
     protected function getRequestPath(string $path = null)
@@ -30,14 +32,21 @@ class BaseRequest
         return $path ? $this->domain.'/'.$path : $this->domain;
     }
 
-    protected function makeRequest(string $method, string $path)
+    protected function makeRequest(string $method, string $path, array $params = [])
     {
-        $response = $this->httpClient->request($method, $path, [
-            'headers' => [
-                'X-Token' => $this->token
-            ]
-        ]);
+        try {
+            $response = $this->httpClient->request($method, $path, [
+                'headers' => [
+                    'X-Token' => $this->token
+                ],
+                'query' => $params
+            ]);
+        } catch (ClientException $e) {
+            if ($e->getCode() === 404) {
+                throw new EntityNotExistException();
+            }
+        }
 
-        return \GuzzleHttp\json_decode($response->getBody()->getContents());
+        return \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
     }
 }
